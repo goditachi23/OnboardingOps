@@ -1,0 +1,38 @@
+[
+  {
+    "pattern": "rm\\s+-[a-z]*r[a-z]*f[a-z]*\\s+/(\\s|$|\\*)",
+    "explanation": "This recursively force-deletes the entire filesystem starting at /. It would destroy the operating system and all data on the server. Never run this, with or without sudo."
+  },
+  {
+    "pattern": "rm\\s+-[a-z]*f[a-z]*r[a-z]*\\s+/(\\s|$|\\*)",
+    "explanation": "This recursively force-deletes everything starting from the root of the filesystem -- the flag order doesn't make it any safer."
+  },
+  {
+    "pattern": "rm\\s+-[a-z]*r[a-z]*f?[a-z]*\\s+~\\s*(/\\*)?\\s*$",
+    "explanation": "This deletes the user's entire home directory and everything in it, with no way to undo it."
+  },
+  {
+    "pattern": "dd\\s+.*of=/dev/(sd|nvme|hd|vd)",
+    "explanation": "dd writing to a raw disk device overwrites it byte-for-byte, permanently destroying the partition table and all data on that disk."
+  },
+  {
+    "pattern": ":\\(\\)\\s*\\{\\s*:\\|\\s*:&\\s*\\};\\s*:",
+    "explanation": "This is a fork bomb. It spawns processes exponentially until the system runs out of memory and CPU, effectively crashing it for everyone."
+  },
+  {
+    "pattern": "chmod\\s+-R\\s+777\\s+/(\\s|$)",
+    "explanation": "This makes every file on the entire system world-readable, writable and executable -- a critical, system-wide security failure, not a fix for one file's permissions."
+  },
+  {
+    "pattern": "mkfs(\\.\\w+)?\\s+/dev/(sd|nvme|hd|vd)",
+    "explanation": "mkfs formats a filesystem, erasing everything on that disk. Only ever run this on a disk you intend to wipe, never on a live system disk."
+  },
+  {
+    "pattern": ">\\s*/dev/(sd|nvme|hd|vd)\\w*\\s*$",
+    "explanation": "Redirecting output directly onto a disk device overwrites its raw contents and destroys the data on it, the same as dd would."
+  },
+  {
+    "pattern": "^\\s*shutdown\\b|^\\s*sudo\\s+shutdown\\b|^\\s*init\\s+0\\b",
+    "explanation": "This powers off the server immediately. Even during an incident, a shutdown should be a deliberate, announced action -- not a reflex fix for a failed service."
+  }
+]

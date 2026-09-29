@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OnboardOps — Sign in</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head><body class="center-page">
+<main class="card auth-card">
+  <h1>OnboardOps</h1>
+  <p class="sub">Learn your team's SOPs by doing them, safely.</p>
+  <div class="tabs">
+    <button id="tabLogin" class="tab on" type="button">Sign in</button>
+    <button id="tabRegister" class="tab" type="button">Create account</button>
+  </div>
+  <form id="loginForm">
+    <label>Username<input id="loginUser" required autocomplete="username"></label>
+    <label>Password<input id="loginPass" type="password" required autocomplete="current-password"></label>
+    <button class="btn" type="submit" style="width:100%">Sign in</button>
+  </form>
+  <form id="registerForm" hidden>
+    <label>Choose a username<input id="regUser" required></label>
+    <label>Choose a password (6+ characters)<input id="regPass" type="password" required minlength="6"></label>
+    <button class="btn" type="submit" style="width:100%">Create account</button>
+    <p class="hint" style="margin-top:10px">New accounts start with no SOPs assigned — an admin assigns your role after you sign up.</p>
+  </form>
+  <p id="err" class="err" hidden></p>
+  <p class="demo">Demo admin: <code>admin / admin123</code><br>Demo trainee: <code>trainee / trainee123</code></p>
+</main>
+<script src="js/api.js"></script>
+<script src="js/login.js"></script>
+</body></html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OnboardOps — Trainee</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head><body>
+<header class="topbar">
+  <h1>OnboardOps<small id="whoami"></small></h1>
+  <div class="stat">
+    <span id="pc"></span>
+    <div class="pb"><i id="bar"></i></div>
+    <span id="xp"></span>
+    <a href="report.html" class="btn g small">My report</a>
+    <button id="logoutBtn" class="btn g small" type="button">Log out</button>
+  </div>
+</header>
+<main class="grid3">
+  <section class="card"><h2>SOP library</h2><div id="list"></div></section>
+  <section class="card" id="steps"></section>
+  <section class="card term">
+    <div class="tape"></div>
+    <div class="tbar">
+      <span><span class="dot"></span><b>TEST ENVIRONMENT</b> · web-01 (simulated)</span>
+      <button class="btn g" id="resetBtn" type="button">Reset sandbox</button>
+    </div>
+    <div id="out" aria-live="polite"></div>
+    <div class="row"><span id="ps"></span><input id="inp" autocomplete="off" spellcheck="false" aria-label="Terminal input" placeholder="type a command, or 'help'"></div>
+  </section>
+</main>
+<script src="js/api.js"></script>
+<script src="js/terminal.js"></script>
+<script src="js/trainee.js"></script>
+</body></html>

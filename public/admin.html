@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OnboardOps — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head><body>
+<header class="topbar">
+  <h1>OnboardOps<small>Admin console — <span id="whoami"></span></small></h1>
+  <div class="stat"><button id="logoutBtn" class="btn g small" type="button">Log out</button></div>
+</header>
+<main class="admin-wrap">
+  <nav class="tabs">
+    <button class="tab on" data-tab="sops" type="button">SOPs</button>
+    <button class="tab" data-tab="users" type="button">Users &amp; roles</button>
+    <button class="tab" data-tab="reports" type="button">Reports</button>
+  </nav>
+
+  <section id="tab-sops" class="tabpanel">
+    <div class="split">
+      <div class="card">
+        <h2>SOP library <button class="btn small" id="newSopBtn" type="button">+ New</button></h2>
+        <div id="sopList"></div>
+      </div>
+      <div class="card" id="sopEditor"><div class="empty">Select an SOP to edit, or create a new one.</div></div>
+    </div>
+  </section>
+
+  <section id="tab-users" class="tabpanel" hidden>
+    <div class="card">
+      <h2>Users<span id="trackHint" class="hint"></span></h2>
+      <table class="tbl" id="userTable"></table>
+    </div>
+  </section>
+
+  <section id="tab-reports" class="tabpanel" hidden>
+    <div class="card"><h2>Trainee performance</h2><table class="tbl" id="repTable"></table></div>
+  </section>
+</main>
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body></html>
