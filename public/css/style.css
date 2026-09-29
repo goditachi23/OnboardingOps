@@ -104,6 +104,7 @@ li.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
 #out .sys{color:#8b97b5}
 #out .danger{color:#ff8a80;font-weight:600}
 #out .teach{color:#ffd280}
+#out .privilege{color:#ffb74d}
 .row{display:flex;gap:8px;background:#0a0f1c;padding:6px 14px 14px;font:13.5px 'IBM Plex Mono',monospace}
 #ps{color:var(--amb);white-space:nowrap}
 #inp{flex:1;min-width:0;background:none;border:0;color:#fff;font:inherit;outline:none}
@@ -120,8 +121,24 @@ li.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
 .drow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;align-items:center;margin-bottom:6px}
 .drow input{margin:0}
 .editor-actions{display:flex;gap:10px;margin-top:16px}
-.chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;margin-right:10px;color:var(--ink)}
+.chip{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);padding:4px 2px}
 .chip input{width:auto;display:inline-block;margin:0}
+
+/* track-assignment dropdown (Users tab): native <details> = accessible,
+   no JS needed for open/close/outside-click, and it won't be clipped
+   by the table like an absolutely-positioned custom widget could be. */
+.trackpicker{position:relative;display:inline-block}
+.trackpicker summary{
+  list-style:none;cursor:pointer;font-size:13px;color:var(--ink);
+  border:1px solid var(--line);border-radius:7px;padding:5px 10px;background:var(--bg);white-space:nowrap;
+}
+.trackpicker summary::-webkit-details-marker{display:none}
+.trackpicker[open] summary{border-color:var(--acc)}
+.trackpicker-panel{
+  position:absolute;top:calc(100% + 4px);left:0;z-index:30;min-width:170px;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;box-shadow:0 6px 20px rgba(0,0,0,.15);
+}
 
 /* ---------- tables ---------- */
 .tbl{width:100%;border-collapse:collapse;font-size:13.5px}

@@ -34,5 +34,13 @@
   {
     "pattern": "^\\s*shutdown\\b|^\\s*sudo\\s+shutdown\\b|^\\s*init\\s+0\\b",
     "explanation": "This powers off the server immediately. Even during an incident, a shutdown should be a deliberate, announced action -- not a reflex fix for a failed service."
+  },
+  {
+    "pattern": "rm\\s+(-\\w+\\s+)?/etc/(passwd|shadow|sudoers)\\b",
+    "explanation": "This deletes a core authentication file. Removing /etc/passwd, /etc/shadow or /etc/sudoers breaks every login on the system, including your own, and can lock everyone out."
+  },
+  {
+    "pattern": "kill\\s+(-9\\s+)?1\\b",
+    "explanation": "Process ID 1 is the init/systemd process that every other process depends on. Killing it panics or reboots the entire machine."
   }
 ]

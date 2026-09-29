@@ -112,6 +112,47 @@ this is graded on a machine you don't control. Swapping in MongoDB or
 Postgres later only touches `db/database.js` and `db/seed.js` — every
 route already goes through `load()`/`save()`.
 
+## Changelog
+
+- **Fixed: a new SOP could silently not show up for trainees.** The cause
+  was a free-text "track" field — typing `Linux` or `linux ` created a
+  track string that didn't exactly match a trainee's assigned `linux`
+  (matching was, and still is, exact/case-sensitive on purpose, so two
+  genuinely different domains never bleed into each other). Two fixes,
+  belt-and-braces:
+  1. `routes/admin.js` now trims and lowercases every track string on the
+     way into storage (`normTrack()`), on both the SOP side and the
+     user-assignment side, so "Linux", "linux " and "linux" can never
+     diverge again.
+  2. The admin SOP editor no longer has a free-text track field. It's a
+     dropdown of tracks that already exist, plus a "+ Add new domain…"
+     option that reveals a text box only when you're genuinely creating a
+     brand-new domain (this is also where "networking", "database", etc.
+     get introduced later — see "Extending" below). Typos on an *existing*
+     domain are no longer possible.
+- **Users & roles tab**: the row of tick-boxes was replaced with a compact
+  dropdown per user (`<details>`/`<summary>`, no extra JS library) that
+  still lets you tick multiple domains at once — this scales to many
+  domains without the table row getting wide.
+- **Terminal now understands far more commands** for free exploration
+  between SOP steps: `top`, `ps`, `free`, `uptime`, `who`/`w`, `hostname`,
+  `uname`, `date`, `history`, `which`, `env`, `man <cmd>`, `netstat`/`ss`,
+  `ip a`/`ifconfig`, `ping`, `find`, `head`, `wc`, `less`/`more`, `file`,
+  `touch`, `mkdir`, `cp`, `mv`, `du`, `passwd`, `su`, `crontab`,
+  `journalctl`, `service`, `kill` — on top of the original `ls`, `cd`,
+  `pwd`, `cat`, `tail`, `grep`, `df`, `systemctl`, `rm`, `chmod`,
+  `useradd`, `usermod`, `id`. See `public/js/terminal.js`.
+- **New teaching category: unnecessary sudo.** Separate from the dangerous-
+  command library and per-step distractors, `services/scoring.js` now
+  flags any read-only command (`ls`, `cat`, `ps`, `top`, `df`, `find`, …)
+  run with `sudo` for no reason, with an explanation of why that's a real
+  risk (a compromised shell or its history then has full root access
+  instead of read-only access) and a small score penalty
+  (`SCORING.PRIVILEGE_PENALTY`). This never fires on the SOPs' own correct
+  steps, since none of them expect sudo on a read-only command.
+- Two more entries in `data/dangerous-commands.json`: deleting
+  `/etc/passwd`/`/etc/shadow`/`/etc/sudoers`, and killing PID 1.
+
 ## Extending (things the project intentionally leaves open)
 
 - **Different infra per track.** Right now "track" is a free-text string

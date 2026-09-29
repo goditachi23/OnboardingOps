@@ -16,13 +16,18 @@ document.querySelectorAll('.tabs .tab').forEach(t => {
 });
 
 function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function trackSummary(tracks) {
+  if (!tracks.length) return 'No domains assigned \u25be';
+  return tracks.join(', ') + ' \u25be';
+}
 
 /* ================= SOPs ================= */
-let sops = [], editingId = null, draft = null;
+let sops = [], editingId = null, draft = null, knownTracks = [];
 
 async function loadSops() {
-  const data = await api('/admin/sops');
-  sops = data.sops;
+  const [{ sops: sopData }, { tracks }] = await Promise.all([api('/admin/sops'), api('/admin/tracks')]);
+  sops = sopData;
+  knownTracks = tracks;
   renderSopList();
 }
 
@@ -67,13 +72,27 @@ function stepRow(s, i) {
 
 function renderEditor() {
   const el = document.getElementById('sopEditor');
+  // A track picked from existing options can never typo into a near-duplicate
+  // (the bug that made a new SOP invisible to trainees). "+ Add new domain"
+  // is the one place a brand-new track name gets typed, so every future
+  // domain (networking, database, cloud...) still just types itself in here.
+  const isCustomTrack = !!draft.track && !knownTracks.includes(draft.track);
   el.innerHTML = `
     <h2 style="margin-bottom:14px">${editingId ? 'Edit SOP' : 'New SOP'}</h2>
     <label>Title<input id="f_title" value="${esc(draft.title)}"></label>
     <div class="row2">
-      <label>Track / role<input id="f_track" value="${esc(draft.track)}" placeholder="e.g. linux, networking, database"></label>
+      <label>Track / domain
+        <select id="f_track_select">
+          <option value="" ${!draft.track ? 'selected' : ''} disabled>Select a domain…</option>
+          ${knownTracks.map(t => `<option value="${esc(t)}" ${draft.track === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+          <option value="__new__" ${isCustomTrack ? 'selected' : ''}>+ Add new domain…</option>
+        </select>
+      </label>
       <label>Tag<input id="f_tag" value="${esc(draft.tag)}" placeholder="Incident, Access, Basics..."></label>
     </div>
+    <label id="f_track_new_wrap" ${isCustomTrack ? '' : 'hidden'}>New domain name (e.g. networking, database, cloud)
+      <input id="f_track_new" value="${isCustomTrack ? esc(draft.track) : ''}" placeholder="networking">
+    </label>
     <div class="row2">
       <label>Why it matters<input id="f_why" value="${esc(draft.why)}"></label>
       <label>Time estimate<input id="f_time" value="${esc(draft.timeEstimate)}"></label>
@@ -87,7 +106,20 @@ function renderEditor() {
     </div>`;
 
   document.getElementById('f_title').oninput = e => draft.title = e.target.value;
-  document.getElementById('f_track').oninput = e => draft.track = e.target.value;
+  const trackSelect = document.getElementById('f_track_select');
+  const trackNewWrap = document.getElementById('f_track_new_wrap');
+  const trackNewInput = document.getElementById('f_track_new');
+  trackSelect.onchange = () => {
+    if (trackSelect.value === '__new__') {
+      trackNewWrap.hidden = false;
+      draft.track = trackNewInput.value.trim();
+      trackNewInput.focus();
+    } else {
+      trackNewWrap.hidden = true;
+      draft.track = trackSelect.value;
+    }
+  };
+  trackNewInput.oninput = e => { draft.track = e.target.value.trim(); };
   document.getElementById('f_tag').oninput = e => draft.tag = e.target.value;
   document.getElementById('f_why').oninput = e => draft.why = e.target.value;
   document.getElementById('f_time').oninput = e => draft.timeEstimate = e.target.value;
@@ -179,7 +211,13 @@ async function loadUsers() {
           <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
         </select>
       </td>
-      <td>${tracks.map(t => `<label class="chip"><input type="checkbox" data-track="${u.id}" value="${esc(t)}" ${u.tracks.includes(t) ? 'checked' : ''}> ${esc(t)}</label>`).join('') || '—'}</td>
+      <td>${tracks.length ? `
+        <details class="trackpicker">
+          <summary data-summary-for="${u.id}">${esc(trackSummary(u.tracks))}</summary>
+          <div class="trackpicker-panel">
+            ${tracks.map(t => `<label class="chip"><input type="checkbox" data-track="${u.id}" value="${esc(t)}" ${u.tracks.includes(t) ? 'checked' : ''}> ${esc(t)}</label>`).join('')}
+          </div>
+        </details>` : '—'}</td>
       <td><button class="link danger" data-del-user="${u.id}" type="button">Delete</button></td>
     </tr>`).join('');
 
@@ -193,6 +231,8 @@ async function loadUsers() {
     cb.onchange = async (e) => {
       const uid = e.target.dataset.track;
       const checked = [...tbl.querySelectorAll(`[data-track="${uid}"]:checked`)].map(x => x.value);
+      const summary = tbl.querySelector(`[data-summary-for="${uid}"]`);
+      if (summary) summary.textContent = trackSummary(checked);
       await api(`/admin/users/${uid}/tracks`, { method: 'PATCH', body: JSON.stringify({ tracks: checked }) });
     };
   });

@@ -6,6 +6,12 @@ const { load, save } = require('../db/database');
 const router = express.Router();
 router.use(verifyToken, requireRole('admin'));
 
+// Tracks are identifiers, not free display text -- "Linux", "linux " and
+// "linux" must all be the SAME track or SOPs silently stop showing up for
+// trainees assigned to it. Every track string passes through here before
+// it's stored, on both the SOP side and the user-assignment side.
+function normTrack(t) { return String(t || '').trim().toLowerCase(); }
+
 // ---------- Users ----------
 router.get('/users', (req, res) => {
   const db = load();
@@ -17,7 +23,7 @@ router.patch('/users/:id/tracks', (req, res) => {
   const db = load();
   const user = db.users.find(u => u.id === req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  user.tracks = Array.isArray(tracks) ? tracks : [];
+  user.tracks = Array.isArray(tracks) ? [...new Set(tracks.map(normTrack).filter(Boolean))] : [];
   save(db);
   res.json({ user: { id: user.id, username: user.username, role: user.role, tracks: user.tracks } });
 });
@@ -81,7 +87,7 @@ router.post('/sops', (req, res) => {
   }
   const db = load();
   const sop = {
-    id: uuid(), title, track, tag: tag || 'General', why: why || '', timeEstimate: timeEstimate || '5 min',
+    id: uuid(), title, track: normTrack(track), tag: tag || 'General', why: why || '', timeEstimate: timeEstimate || '5 min',
     createdBy: req.user.id, createdAt: new Date().toISOString(),
     steps: sanitizeSteps(steps)
   };
@@ -109,7 +115,7 @@ router.put('/sops/:id', (req, res) => {
   db.sops[idx] = {
     ...existing,
     title: title ?? existing.title,
-    track: track ?? existing.track,
+    track: track ? normTrack(track) : existing.track,
     tag: tag ?? existing.tag,
     why: why ?? existing.why,
     timeEstimate: timeEstimate ?? existing.timeEstimate,

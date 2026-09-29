@@ -6,6 +6,7 @@ module.exports = {
   SCORING: {
     HINT_PENALTY: 5,
     DISTRACTOR_PENALTY: 3,
+    PRIVILEGE_PENALTY: 3,
     COMPLETION_BONUS: 30
   }
 };

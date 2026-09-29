@@ -94,6 +94,12 @@ router.post('/:attemptId/command', (req, res) => {
     // so it costs points and counts as an error in the report.
     attempt.score = Math.max(attempt.score - SCORING.DISTRACTOR_PENALTY, 0);
     attempt.errorsCount += 1;
+  } else if (evalResult.type === 'unnecessary_sudo') {
+    // Read-only command run with sudo for no reason: a habit worth
+    // correcting, not a wrong SOP step, but still logged and lightly
+    // penalized so it shows up in the report.
+    attempt.score = Math.max(attempt.score - SCORING.PRIVILEGE_PENALTY, 0);
+    attempt.errorsCount += 1;
   }
   // 'unrecognized' (typos, exploration like ls/pwd/cat elsewhere) is logged
   // but never penalized -- only commands the author specifically flagged as

@@ -90,6 +90,7 @@ async function submitCommand(line) {
   attempt = data.attempt;
   const r = data.result;
   if (r.type === 'dangerous') pr('\ud83d\udee1 BLOCKED — ' + r.message, 'danger');
+  else if (r.type === 'unnecessary_sudo') pr('\ud83d\udd11 ' + r.message, 'privilege');
   else if (r.type === 'distractor') pr('\ud83d\udcd8 Not for this step — ' + r.message, 'teach');
   else if (r.type === 'correct') pr('\u2714 Step done', 'ok');
   renderSteps();
