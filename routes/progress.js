@@ -81,13 +81,16 @@ router.post('/:attemptId/command', (req, res) => {
   if (evalResult.type === 'dangerous') {
     attempt.safetyViolations += 1;
   } else if (evalResult.type === 'correct') {
-    attempt.score += step.points;
+    const stepPoints = Number(step.points || 0);
+    const hintPenalty = attempt.stepHintsTaken[step.id]
+      ? Math.min(SCORING.HINT_PENALTY, stepPoints / 2)
+      : 0;
+    attempt.score += stepPoints - hintPenalty;
     attempt.currentStepIndex += 1;
     advanced = true;
     if (attempt.currentStepIndex >= sop.steps.length) {
       attempt.status = 'completed';
       attempt.completedAt = new Date().toISOString();
-      attempt.score += SCORING.COMPLETION_BONUS;
     }
   } else if (evalResult.type === 'distractor') {
     // A plausible-but-wrong command for THIS step: a real teaching moment,
@@ -125,7 +128,6 @@ router.post('/:attemptId/hint', (req, res) => {
 
   attempt.stepHintsTaken[step.id] = (attempt.stepHintsTaken[step.id] || 0) + 1;
   attempt.hintsUsedTotal += 1;
-  attempt.score = Math.max(attempt.score - SCORING.HINT_PENALTY, 0);
   attempt.log.push({ command: '(hint requested)', type: 'hint', stepIndex: attempt.currentStepIndex, at: new Date().toISOString() });
   save(db);
 

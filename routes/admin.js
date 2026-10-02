@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuid } = require('uuid');
 const { verifyToken, requireRole } = require('../middleware/auth');
 const { load, save } = require('../db/database');
+const { normalizeTrack } = require('../services/tracks');
 
 const router = express.Router();
 router.use(verifyToken, requireRole('admin'));
@@ -10,7 +11,7 @@ router.use(verifyToken, requireRole('admin'));
 // "linux" must all be the SAME track or SOPs silently stop showing up for
 // trainees assigned to it. Every track string passes through here before
 // it's stored, on both the SOP side and the user-assignment side.
-function normTrack(t) { return String(t || '').trim().toLowerCase(); }
+function normTrack(t) { return normalizeTrack(t); }
 
 // ---------- Users ----------
 router.get('/users', (req, res) => {
@@ -81,6 +82,9 @@ router.post('/sops', (req, res) => {
     if (!s.instruction || !s.expectedPattern) {
       return res.status(400).json({ error: 'Every step needs an instruction and an expected command pattern' });
     }
+    if (s.points !== undefined && (!Number.isFinite(Number(s.points)) || Number(s.points) < 0)) {
+      return res.status(400).json({ error: 'Step points must be a number greater than or equal to zero' });
+    }
     try { new RegExp(s.expectedPattern); } catch (e) {
       return res.status(400).json({ error: `Step "${s.instruction}" has an invalid regular expression` });
     }
@@ -105,6 +109,9 @@ router.put('/sops/:id', (req, res) => {
     for (const s of steps) {
       if (!s.instruction || !s.expectedPattern) {
         return res.status(400).json({ error: 'Every step needs an instruction and an expected command pattern' });
+      }
+      if (s.points !== undefined && (!Number.isFinite(Number(s.points)) || Number(s.points) < 0)) {
+        return res.status(400).json({ error: 'Step points must be a number greater than or equal to zero' });
       }
       try { new RegExp(s.expectedPattern); } catch (e) {
         return res.status(400).json({ error: `Step "${s.instruction}" has an invalid regular expression` });

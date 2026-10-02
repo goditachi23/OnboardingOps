@@ -67,7 +67,7 @@ function evaluateCommand({ command, step }) {
 }
 
 function maxScore(sop) {
-  return sop.steps.reduce((sum, s) => sum + s.points, 0) + SCORING.COMPLETION_BONUS;
+  return sop.steps.reduce((sum, s) => sum + Number(s.points || 0), 0);
 }
 
 function grade(pct) {

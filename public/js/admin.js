@@ -56,7 +56,7 @@ function stepRow(s, i) {
       <label>Expected command (regex, matched case-insensitively)<input data-f="expectedPattern" data-i="${i}" value="${esc(s.expectedPattern)}" placeholder="^sudo systemctl restart nginx$"></label>
       <label>Points<input data-f="points" data-i="${i}" type="number" value="${s.points}"></label>
     </div>
-    <label>Hint command (shown when the trainee asks for help — costs points)<input data-f="hintCommand" data-i="${i}" value="${esc(s.hintCommand)}"></label>
+    <label>Hint command (the first hint reduces points earned for this step)<input data-f="hintCommand" data-i="${i}" value="${esc(s.hintCommand)}"></label>
     <div class="distractors">
       <b>Teach on these wrong-but-plausible commands</b>
       ${(s.distractors || []).map((d, di) => `

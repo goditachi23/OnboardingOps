@@ -8,30 +8,7 @@
 function makeSandbox() {
   let cwd, F, nginx, disk, users, hist;
 
-  const MAN = {
-    ls: 'list directory contents', cd: 'change the working directory', pwd: 'print working directory',
-    cat: 'concatenate and print a file', tail: 'output the last part of a file', head: 'output the first part of a file',
-    grep: 'search text for a pattern', find: 'search for files in a directory tree', wc: 'count lines/words/bytes',
-    df: 'report filesystem disk space usage', du: 'estimate file/directory space usage',
-    systemctl: 'control systemd services', service: 'run a System V init script',
-    ps: 'report a snapshot of current processes', top: 'display running processes, updating',
-    free: 'display memory usage', uptime: 'show how long the system has been running and its load',
-    whoami: 'print the current username', id: 'print user and group IDs', who: 'show who is logged in',
-    w: 'show who is logged in and what they are doing', hostname: 'show or set the system hostname',
-    uname: 'print system information', date: 'print or set the system date and time',
-    history: 'show the command history of this session', which: 'locate a command in PATH',
-    env: 'print the environment', man: 'show the manual page for a command',
-    netstat: 'show network connections', ss: 'show socket statistics', ip: 'show/manipulate networking',
-    ifconfig: 'configure a network interface', ping: 'send ICMP echo requests to a host',
-    less: 'view a file one screen at a time', more: 'view a file one screen at a time', file: 'identify file type',
-    touch: 'create an empty file or update its timestamp', mkdir: 'create a directory',
-    cp: 'copy a file', mv: 'move or rename a file', rm: 'remove a file',
-    chmod: 'change file permissions', useradd: 'create a new user account', usermod: 'modify a user account',
-    passwd: 'change a user password', su: 'switch user', sudo: 'run a command as another user (usually root)',
-    kill: 'send a signal to a process', crontab: 'schedule recurring jobs',
-    journalctl: 'query the systemd journal (logs)', clear: 'clear the terminal screen', echo: 'print text',
-    help: 'list the commands this sandbox understands'
-  };
+  const MAN = window.LINUX_COMMANDS || {};
 
   function fresh() {
     cwd = '/home/trainee';
@@ -76,9 +53,7 @@ function makeSandbox() {
     switch (c) {
       case '': return '';
       case 'help':
-        return 'Try: ls, cd, pwd, cat, head, tail, grep, find, wc, df, du, systemctl, service, ps, top, free, uptime, ' +
-          'whoami, id, who, w, hostname, uname, date, history, which, env, man <cmd>, netstat, ss, ip a, ping, ' +
-          'less, file, touch, mkdir, cp, mv, rm, chmod, useradd, usermod, passwd, su, kill, crontab, journalctl, sudo, clear';
+        return 'Available commands:\n' + Object.keys(MAN).sort().join('  ') + '\nUse man <command> for a short description.';
       case 'man': {
         const name = f[0];
         if (!name) return 'What manual page do you want?';
@@ -226,6 +201,30 @@ function makeSandbox() {
       }
       case 'ip': case 'ifconfig':
         return 'eth0: flags=4163<UP,BROADCAST,RUNNING>  mtu 1500\n        inet 10.0.0.42  netmask 255.255.255.0\n        ether 02:42:0a:00:00:2a';
+      case 'ipconfig':
+        return 'Windows-style alias for this sandbox.\neth0: inet 10.0.0.42  netmask 255.255.255.0  state UP';
+      case 'traceroute': case 'tracepath':
+        return `tracing route to ${f[0] || 'example.com'} (10.0.0.1), 3 hops max\n 1  gateway (10.0.0.1)  0.4 ms\n 2  edge-router (10.0.1.1)  1.2 ms\n 3  ${f[0] || 'example.com'} (203.0.113.10)  8.5 ms`;
+      case 'dig': case 'nslookup': case 'host':
+        return `Server: 10.0.0.53\nName: ${f[f.length - 1] || 'example.com'}\nAddress: 203.0.113.10`;
+      case 'curl': case 'wget':
+        return f[0] ? `Connected to ${f[f.length - 1]} (simulated sandbox response).` : `${c}: missing URL`;
+      case 'mount':
+        return '/dev/nvme0n1p1 on / type xfs (rw,relatime)\nproc on /proc type proc (rw,nosuid,nodev)\nsysfs on /sys type sysfs (rw,nosuid,nodev)';
+      case 'lsblk':
+        return 'NAME        SIZE TYPE MOUNTPOINT\nnvme0n1      50G disk\n└─nvme0n1p1  50G part /';
+      case 'groups':
+        return `${f[0] || 'trainee'} : ${f[0] || 'trainee'}`;
+      case 'cal':
+        return '     October 2026\nSu Mo Tu We Th Fr Sa\n             1  2  3\n 4  5  6  7  8  9 10\n11 12 13 14 15 16 17\n18 19 20 21 22 23 24\n25 26 27 28 29 30 31';
+      case 'apt': case 'apt-get': case 'dnf': case 'yum': case 'rpm': case 'dpkg':
+        return `${c}: package changes are disabled in this training sandbox.`;
+      case 'git':
+        return f[0] === 'status' ? 'On branch main\nNothing to commit, working tree clean' : 'git: simulated sandbox; repository changes are disabled.';
+      case 'python': case 'python3': case 'node': case 'npm':
+        return `${c}: runtime commands are listed for reference but code execution is disabled in this sandbox.`;
+      case 'nano': case 'vi': case 'vim': case 'htop': case 'top':
+        return `${c}: interactive screen applications are not available in the browser terminal.`;
       case 'ping': {
         const host = f[0] || 'localhost';
         return `PING ${host} 56(84) bytes of data.\n64 bytes from ${host}: icmp_seq=1 ttl=64 time=0.031 ms\n\n--- ${host} ping statistics ---\n1 packets transmitted, 1 received, 0% packet loss`;
@@ -281,6 +280,7 @@ function makeSandbox() {
       if (!x) return `bash: ${c}: No such file or directory`;
       return x.p.includes('x') ? 'Backup complete \u2714 /backup/data.tgz (1.2G)' : `bash: ${c}: Permission denied (hint: chmod)`;
     }
+    if (MAN[c]) return `${c}: recognized command. This command is listed for reference but its system-changing behavior is not simulated.`;
     return `${c}: command not found (type 'help')`;
   }
 
